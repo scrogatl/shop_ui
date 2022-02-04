@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: homelab-tacocat-02-tanzu-observability-demo
+    service: shop-ui
+    shard: blue
+  name: shop-ui-blue
+  namespace: tanzu-observability-demo-eks
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: homelab-tacocat-02-tanzu-observability-demo
+      service: shop-ui
+      shard: blue
+  template:
+    metadata:
+      labels:
+        app: homelab-tacocat-02-tanzu-observability-demo
+        service: shop-ui
+        shard: blue
+    spec:
+      containers:
+      - name: shop-ui
+        image: public.ecr.aws/z4m0n1r4/to-cf-demo/shop_ui:1.0
+        imagePullPolicy: Always
+        # command:
+        # - "serve"
+        # - "-d -n"
+        # - "build"
+        ports:
+        - containerPort: 8080
+          name: application
+          protocol: TCP
+        volumeMounts:
+        - name: conf
+          mountPath: /conf
+        resources:
+          limits:
+            memory: 512Mi
+          requests:
+            memory: 350Mi
+      volumes:
+      - name: conf
+        configMap:
+          name: app-config-blue
+          defaultMode: 0744
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: tanzu-observability-demo-ui
+    service: shop-ui
+    shard: green
+  name: shop-ui-green
+  namespace: tanzu-observability-demo-eks
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tanzu-observability-demo-ui
+      service: shop-ui
+      shard: green
+  template:
+    metadata:
+      labels:
+        app: tanzu-observability-demo-ui
+        service: shop-ui
+        shard: green
+    spec:
+      containers:
+        - name: shop-ui
+          image: public.ecr.aws/z4m0n1r4/to-cf-demo/shop_ui:1.0
+          imagePullPolicy: Always
+          command:
+            # - "python3"
+            # - "manage.py"
+            # - "runserver"
+            # - "0.0.0.0:50060"
+          ports:
+            - containerPort: 8080
+              name: application
+              protocol: TCP
+          volumeMounts:
+            - name: conf
+              mountPath: /conf
+          resources:
+            limits:
+              memory: 512Mi
+            requests:
+              memory: 350Mi
+      volumes:
+        - name: conf
+          configMap:
+            name: app-config-green
+            defaultMode: 0744
+
